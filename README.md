@@ -1,6 +1,6 @@
 # Sunpy--Solar-Synoptic-Map
 
-The purpose of this project is to achieve solar synoptics maps of the sun.
+The purpose of this project is to achieve synoptics maps of the sun.
 
 ---
 
