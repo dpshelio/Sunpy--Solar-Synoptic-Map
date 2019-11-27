@@ -15,7 +15,8 @@ import gzip
 import shutil
 
 def getURLFromSM(inst,wv,soon,late):
-     """
+    
+    """
         @ params
             * inst : instrument 
             * wv : length wave 
@@ -26,6 +27,7 @@ def getURLFromSM(inst,wv,soon,late):
             * ret : list with urls from SM in that range of time
         
     """
+     
     solmon_pattern = (
                              'http://solarmonitor.org/data/'
                              '%Y/%m/%d/fits/{instrument}/'
@@ -82,6 +84,8 @@ def downloadFITSfrom(urls,dir_cont):
                         f_in.close(); 
                         f_out.close();
                         os.remove(path); 
+                      
+                
                         
                         
         
