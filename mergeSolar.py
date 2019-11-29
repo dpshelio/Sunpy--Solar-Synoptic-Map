@@ -28,8 +28,6 @@ import sys
 import argparse
 
 
-
-
 def getPointToPixelWorld(alf, bet, aia_map):
     
     """
@@ -67,26 +65,51 @@ def cropImageEdge(aia_map):
     return aia_map.data[limites[0]:limites[2],limites[0]:limites[2]];
 
 
+def getDegreesFromNDays(T, numDays, width):
+    
+    """
+        @ params
+            * T: Solar period
+            * numDays : How many days between two images in days
+            * width : Imagen width 
+        
+        @ return
+            * ret : Returns the number of pixels that we have to take from that image
+        
+    """
+    
+    # Sun -> T = 25.4  días
+    
+    deg = numDays * 360 / T ; 
+    
+    numPixInImage = deg * width / 180 ; 
+    
+    return numPixInImage; 
 
-def cropImageNmiddle(img_exp,aux,N):
+def cropImageNmiddle(img_exp,aux,numDays):
 
     """
         @ params
             * img_exp : Expanded array image
             * aux : How many pixels you want to fill between two images to reduce the posible error.
-            * N : 
+            * N : difference of time between two images 
         
         @ return
             * ret : Returns an expanded and cropped image in the middle
         
-    """            
-    pto = N * ((img_exp.shape[0] / 180) * 13.19)+ aux;
-    pto = int(pto);
-
-    ini = ( img_exp.shape[1] - pto ) / 2; 
+    """    
+    T = 25.4 ; 
+    width = img_exp.shape[1]; 
+    pto = int(getDegreesFromNDays(T, numDays,width)) ; # pixels type int
     
-    return img_exp[0:img_exp.shape[0],int(ini - 1): int((ini - 1) + pto)];
-
+    pto += aux * numDays ; 
+    
+    ini = ( width - pto ) / 2; 
+    ini = int(ini); 
+    
+    crop = img_exp[0:width,int(ini - 1): int((ini - 1) + pto)];
+    
+    return crop
 
 
 def mappingTheImage(path_dir,path_fits):
@@ -104,7 +127,7 @@ def mappingTheImage(path_dir,path_fits):
     header_princ     = hdu_list_princ[0].header;
     img_data_princ   = hdu_list_princ[0].data;
 
-    return sunpy.map.Map((img_data_princ,header_princ)) ;## Tener cuidado ya que no se si usar img_expand o img_data.
+    return sunpy.map.Map((img_data_princ,header_princ)) ;
 
 
 def mergeSolarImagesFromDir(path_dir,numDays,path_out,aux,obser):
@@ -125,10 +148,10 @@ def mergeSolarImagesFromDir(path_dir,numDays,path_out,aux,obser):
     
     cont = 0; 
     cont_temp = 0; 
-
+    N = 0; 
     for path_fits in os.listdir(path_dir):
-
-        if (cont_temp > numDays):
+        
+        if (numDays != 0 and cont_temp > numDays):
            break;
         
 
@@ -144,8 +167,15 @@ def mergeSolarImagesFromDir(path_dir,numDays,path_out,aux,obser):
     
         else:
             N = (aia_map.date - date).value 
+            if ( N < 0.3 ):
+                continue ; 
             cont_temp += N; 
-
+           
+        print("\tTime difference between two images : ",end = "")
+        print((aia_map.date - date).value)
+        print("\tTime spent in composition : ", end = "")
+        print(cont_temp)
+        
         if ( N >= 0):
             
             # We cut by the edge of the sun
@@ -171,10 +201,20 @@ def mergeSolarImagesFromDir(path_dir,numDays,path_out,aux,obser):
 
             date = aia_map.date ;
             cont += 1
-            
+    #plt.imsave(path_out,final,cmap=plt.get_cmap(obser));
+    
     print("::::::::::::::::::::::::::::::::::::::::::::");
+    
     print("Image will be saved in : ", path_out);
     print("Saving...");
-    plt.imsave(path_out,final,cmap=plt.get_cmap(obser));  
+    try:
+      os.stat(path_out) ; 
+    except:
+      os.mkdir(path_out) ; 
+    
+    path_out = path_out + "/mapa_sinaptico_.png";
+    plt.imsave(path_out,final,cmap=plt.get_cmap(obser)); 
+    
+    print("READY")
     
     

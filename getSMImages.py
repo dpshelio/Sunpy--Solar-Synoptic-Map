@@ -14,6 +14,29 @@ import os
 import gzip
 import shutil
 
+def decomprGZ(dir_cont):
+    
+    """
+        @ params
+            * dir_cont : directory whose archieves are going to be descompressing
+        
+        @ return
+            * ret : Returns an image cropped by the edge of the sun
+        
+    """
+    
+    print("Decompressing ..." + "\n")
+    for path_fits in os.listdir(dir_cont):
+            if ( path_fits[-3:] == '.gz'):
+                path     = dir_cont + "/" + path_fits ; 
+                print("\t" + "The archieve will be descompressed as :" + path[:-3] + "\n"); 
+                with gzip.open(path, 'rb') as f_in:
+                    with open(path[:-3], 'wb') as f_out:
+                        shutil.copyfileobj(f_in, f_out);
+                        f_in.close(); 
+                        f_out.close();
+                        os.remove(path);
+
 def getURLFromSM(inst,wv,soon,late):
     
     """
@@ -70,20 +93,6 @@ def downloadFITSfrom(urls,dir_cont):
         with open(dir_out, 'wb') as archivo:
            with open(archivo_tmp, 'rb') as tmp:
                 archivo.write(tmp.read())
-      
-    # Second the archives are decompressed
-    
-    print("Decompressing ..." + "\n")
-    for path_fits in os.listdir(dir_cont):
-            if ( path_fits[-3:] == '.gz'):
-                path     = dir_cont + "/" + path_fits ; 
-                print("\t" + "The archieve will be descompressed as :" + path[:-3] + "\n"); 
-                with gzip.open(path, 'rb') as f_in:
-                    with open(path[:-3], 'wb') as f_out:
-                        shutil.copyfileobj(f_in, f_out);
-                        f_in.close(); 
-                        f_out.close();
-                        os.remove(path); 
                       
                 
                         
